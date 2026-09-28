@@ -1,0 +1,40 @@
+{
+  "crons": [
+    {
+      "path": "/api/jobs/run",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/jobs/run-draws",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/jobs/refresh-reporting",
+      "schedule": "* * * * *"
+    },
+    {
+      "path": "/api/jobs/refresh-marketing-profiles",
+      "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-delivery",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-discovery",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-materialisation",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-preparation",
+      "schedule": "2-59/10 * * * *"
+    },
+    {
+      "path": "/api/cron/marketing-readiness",
+      "schedule": "4-59/10 * * * *"
+    }
+  ]
+}

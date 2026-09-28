@@ -1,0 +1,541 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --background: #F9FAFB;
+  --foreground: #111827;
+  --card: #FFFFFF;
+  --card-foreground: #111827;
+  --popover: #FFFFFF;
+  --popover-foreground: #111827;
+  --primary: #6D28D9;
+  --primary-foreground: #FFFFFF;
+  --secondary: #F3F4F6;
+  --secondary-foreground: #111827;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: rgba(109,40,217,0.08);
+  --accent-foreground: #111827;
+  --destructive: oklch(0.577 0.245 27.325);
+  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --border: #E5E7EB;
+  --input: #E5E7EB;
+  --ring: #6D28D9;
+  --chart-1: #6D28D9;
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.75rem;
+  --brand: #6D28D9;
+  --brand-hover: #5B21B6;
+  --brand-soft: rgba(109,40,217,0.08);
+  --gold: #F59E0B;
+  --gold-soft: rgba(245,158,11,0.12);
+  --trust: #10B981;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: #111827;
+  --sidebar-primary: #6D28D9;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: rgba(109,40,217,0.08);
+  --sidebar-accent-foreground: #111827;
+  --sidebar-border: #E5E7EB;
+  --sidebar-ring: #6D28D9;
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  /*
+   * Customer-facing font stack. `--font-wtf-sans` is remapped per-scope below:
+   * it resolves to Roboto under the `.wtf-type` marker (customer routes) and
+   * falls back to the previous system stack on /admin, which never receives
+   * the marker. This keeps the `font-sans` utility itself scope-aware.
+   */
+  --font-sans: var(--font-wtf-sans);
+  --font-mono: var(--font-geist-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-trust: var(--trust);
+}
+
+/*
+ * ---------------------------------------------------------------------------
+ * WTF customer-facing typography (Roboto)
+ * ---------------------------------------------------------------------------
+ * Applied ONLY under the `.wtf-type` marker that app/layout.tsx puts on <body>
+ * for non-admin routes. /admin never receives the class, so the admin interface
+ * keeps its previous system-stack typography untouched.
+ *
+ * This block sets font-family only. No sizes, spacing, colours, letter-spacing
+ * or layout values are declared here, so existing layouts are unaffected.
+ */
+/*
+ * Default (admin and any non-marked scope): the previous system stack, so
+ * /admin typography is byte-for-byte what it rendered before this change.
+ */
+:root {
+  --font-wtf-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/*
+ * Customer routes: remap the same variable to Roboto. Because `--font-sans`
+ * (and therefore Tailwind's `font-sans` utility) is built from this variable,
+ * the whole customer tree switches to Roboto without needing to out-specify
+ * the `font-sans` class on <body>.
+ */
+.wtf-type {
+  --font-wtf-sans: var(--font-roboto), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+}
+
+/*
+ * Promotional display treatment: Roboto Black Italic.
+ *
+ * Sportsbook/casino character comes from weight + italic only. Deliberately no
+ * font-size, letter-spacing, text-transform, colour or margin here, so adding
+ * this class to an existing element cannot change its dimensions or wrapping.
+ *
+ * This is the only italic face loaded anywhere in the customer typography.
+ */
+.wtf-type .wtf-display {
+  /*
+   * Dedicated Roboto Black Italic instance (900 italic only), with the upright
+   * Roboto instance as the first fallback so this still renders as Roboto if
+   * the italic face has not painted yet.
+   */
+  font-family: var(--font-roboto-display), var(--font-roboto), ui-sans-serif,
+    system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  font-weight: 900;
+  font-style: italic;
+  /* Use the real Roboto Black Italic face, never a synthesised slant. */
+  font-synthesis: none;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  .container {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@keyframes bundle-popular-glow {
+  0%, 100% { box-shadow: 0 0 14px rgba(251, 191, 36, 0.35); }
+  50% { box-shadow: 0 0 26px rgba(251, 191, 36, 0.75); }
+}
+
+/*
+ * Admin live-control screen only: hide the public site footer and the fixed
+ * mobile bottom nav so a host gets a clean, full-height control surface.
+ * Scoped via the [data-hide-public-chrome] marker that ONLY the
+ * /admin/live-feed/[id] page renders, so public pages are never affected.
+ * SiteFooter (<footer>), MobileNav (<nav>) and its spacer (<div class="h-20 md:hidden">)
+ * are direct children of <body>, so direct-child selectors stay safe/specific
+ * and never touch the admin sidebar nav (which is nested inside AdminShell).
+ */
+body:has([data-hide-public-chrome]) > footer,
+body:has([data-hide-public-chrome]) > nav,
+body:has([data-hide-public-chrome]) > div.h-20.md\:hidden {
+  display: none !important;
+}
+
+/*
+ * ── Homepage Main Banner: LIVE motion system ──────────────────────────────
+ * Scoped, GPU-friendly CSS animations used ONLY by the LIVE state of the
+ * homepage hero (`components/home/HomepageHero` + `HeroLiveStats`). Everything
+ * is namespaced `hero-*` so it cannot affect any other component. All motion is
+ * decorative and never implies fabricated activity. The reduced-motion block at
+ * the end disables every animation and restores a polished static LIVE look.
+ */
+
+/* Slow "breathing" neon border/glow on the LIVE shell (~2.6s). */
+@keyframes hero-border-breathe {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 6px rgba(255, 220, 243, 0.3),
+      0 0 22px rgba(236, 72, 153, 0.32),
+      0 0 60px -20px rgba(236, 72, 153, 0.6);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 12px rgba(255, 220, 243, 0.55),
+      0 0 34px rgba(236, 72, 153, 0.6),
+      0 0 84px -14px rgba(255, 60, 181, 0.9);
+  }
+}
+.hero-live-shell {
+  animation: hero-border-breathe 2.6s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
+/* Broadcast lighting sweep drifting slowly over the artwork (behind the UI). */
+@keyframes hero-lighting-drift {
+  0%, 100% { opacity: 0.35; transform: translate3d(-6%, -4%, 0) scale(1.1); }
+  50%      { opacity: 0.62; transform: translate3d(6%, 4%, 0) scale(1.28); }
+}
+.hero-lighting {
+  animation: hero-lighting-drift 9s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+/* Extremely subtle cinematic artwork drift: gentle zoom + tiny position drift,
+ * so the broadcast background is never perfectly still. */
+@keyframes hero-kenburns {
+  0%   { transform: scale(1) translate3d(0, 0, 0); }
+  50%  { transform: scale(1.025) translate3d(-1.2%, -0.9%, 0); }
+  100% { transform: scale(1) translate3d(0, 0, 0); }
+}
+.hero-kenburns {
+  animation: hero-kenburns 20s ease-in-out infinite;
+  transform-origin: center;
+  will-change: transform;
+}
+
+/* LIVE expanding signal rings (slow, polished — not a flashing alarm). */
+@keyframes hero-signal {
+  0%   { transform: scale(0.6); opacity: 0.7; }
+  70%  { opacity: 0; }
+  100% { transform: scale(2.4); opacity: 0; }
+}
+.hero-signal {
+  animation: hero-signal 2.2s ease-out infinite;
+  will-change: transform, opacity;
+}
+
+/* Gentle glow pulse on the LIVE (pink) CTA — position stays fixed. */
+@keyframes hero-cta-glow {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.45),
+      0 0 14px rgba(236, 60, 181, 0.5);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.55),
+      0 0 26px rgba(255, 95, 198, 0.85);
+  }
+}
+.hero-live-cta {
+  animation: hero-cta-glow 2.2s ease-in-out infinite;
+  will-change: box-shadow;
+}
+
+/* Gentle flame/icon pulse inside the LIVE CTA (icon only — button is fixed). */
+@keyframes hero-flame-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255, 220, 245, 0)); }
+  50%      { transform: scale(1.12); filter: drop-shadow(0 0 6px rgba(255, 220, 245, 0.9)); }
+}
+.hero-flame-pulse {
+  animation: hero-flame-pulse 1.8s ease-in-out infinite;
+  will-change: transform, filter;
+}
+
+/* One-shot flash when a GENUINE live-board value actually changes. */
+@keyframes hero-stat-pop {
+  0%   { transform: scale(1); text-shadow: 0 0 0 rgba(255, 95, 198, 0); }
+  30%  { transform: scale(1.16); text-shadow: 0 0 16px rgba(255, 95, 198, 0.95); }
+  100% { transform: scale(1); text-shadow: 0 0 0 rgba(255, 95, 198, 0); }
+}
+.hero-stat-pop {
+  animation: hero-stat-pop 0.7s ease-out;
+}
+
+/* Genuine "just popped" event chip sliding into view when the event changes. */
+@keyframes hero-event-in {
+  0%   { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.hero-event-in {
+  animation: hero-event-in 0.5s ease-out;
+}
+
+/* Diagonal studio-lighting sweep passing across the artwork ~every 7s. The
+ * band is only visible for a short slice of the cycle (restrained, not a
+ * casino flash). Decorative — represents the active broadcast, not activity. */
+@keyframes hero-sweep {
+  0%      { transform: translateX(-160%) skewX(-16deg); opacity: 0; }
+  6%      { opacity: 0.55; }
+  20%     { transform: translateX(160%) skewX(-16deg); opacity: 0; }
+  100%    { transform: translateX(160%) skewX(-16deg); opacity: 0; }
+}
+.hero-sweep {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -30%;
+  width: 40%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 120, 210, 0.32) 45%,
+    rgba(255, 220, 245, 0.5) 50%,
+    rgba(255, 120, 210, 0.32) 55%,
+    transparent 100%
+  );
+  mix-blend-mode: screen;
+  animation: hero-sweep 7s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* LIVE equalizer bars — a small live "signal" that always moves. */
+@keyframes hero-eq {
+  0%, 100% { transform: scaleY(0.35); }
+  50%      { transform: scaleY(1); }
+}
+.hero-eq {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+}
+.hero-eq-bar {
+  width: 2px;
+  height: 11px;
+  border-radius: 1px;
+  transform-origin: bottom;
+  /* Sits inside the solid-red "LIVE NOW" pill, so the bars are white for
+     contrast against the red rather than the pink used elsewhere. */
+  background: linear-gradient(180deg, #ffffff 0%, rgba(255, 255, 255, 0.72) 100%);
+  animation: hero-eq 0.9s ease-in-out infinite;
+}
+.hero-eq-bar:nth-child(2) { animation-delay: 0.15s; }
+.hero-eq-bar:nth-child(3) { animation-delay: 0.3s; }
+.hero-eq-bar:nth-child(4) { animation-delay: 0.45s; }
+
+/* Moving internal highlight — a shimmer band that crosses a pill/strip. Used
+ * on the "we're live" message and the status strip. Parent must be relative +
+ * overflow-hidden; the band is a child, so text position never moves. */
+@keyframes hero-shimmer {
+  0%       { transform: translateX(-140%) skewX(-18deg); }
+  55%,100% { transform: translateX(320%) skewX(-18deg); }
+}
+.hero-shimmer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28%;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.45) 50%,
+    transparent 100%
+  );
+  animation: hero-shimmer 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Sparse atmospheric light glints drifting upward over the artwork. Purely
+ * decorative ambient light — never implies a win or purchase. */
+@keyframes hero-float {
+  0%   { transform: translateY(10px) scale(0.7); opacity: 0; }
+  25%  { opacity: 0.7; }
+  75%  { opacity: 0.35; }
+  100% { transform: translateY(-20px) scale(1); opacity: 0; }
+}
+.hero-particle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(255, 190, 235, 0.95) 0%, rgba(255, 60, 181, 0) 70%);
+  animation: hero-float 6s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* LEVEL 2 reaction: a short, stronger glow ring fired ONLY when genuine
+ * live-board data changes (dispatched by HeroLiveStats). Runs on a dedicated
+ * overlay so it does not fight the always-on breathing animation. */
+@keyframes hero-react-ring {
+  0%   { opacity: 0; box-shadow: inset 0 0 0 1px rgba(255, 95, 198, 0), 0 0 0 rgba(255, 60, 181, 0); }
+  22%  { opacity: 1; box-shadow: inset 0 0 22px 2px rgba(255, 120, 210, 0.6), 0 0 64px 6px rgba(255, 60, 181, 0.7); }
+  100% { opacity: 0; box-shadow: inset 0 0 0 1px rgba(255, 95, 198, 0), 0 0 0 rgba(255, 60, 181, 0); }
+}
+.hero-react-ring {
+  opacity: 0;
+}
+.hero-react .hero-react-ring {
+  animation: hero-react-ring 1.5s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-live-shell,
+  .hero-lighting,
+  .hero-kenburns,
+  .hero-signal,
+  .hero-live-cta,
+  .hero-stat-pop,
+  .hero-event-in,
+  .hero-sweep,
+  .hero-eq-bar,
+  .hero-shimmer,
+  .hero-particle,
+  .hero-flame-pulse,
+  .hero-react .hero-react-ring {
+    animation: none !important;
+  }
+  .hero-flame-pulse { transform: none; filter: none; }
+  /* Restore a strong, static LIVE glow so the reduced-motion state still reads
+     as premium and "live" — just without movement. */
+  .hero-live-shell {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 0 10px rgba(255, 220, 243, 0.45),
+      0 0 30px rgba(236, 72, 153, 0.5),
+      0 0 72px -16px rgba(236, 72, 153, 0.78);
+  }
+  .hero-live-cta {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 0 18px rgba(236, 60, 181, 0.65);
+  }
+  .hero-kenburns { transform: scale(1); }
+  .hero-lighting { opacity: 0.4; transform: translate3d(0, 0, 0) scale(1.15); }
+  /* Decorative-only motion is removed entirely (not just frozen). */
+  .hero-sweep,
+  .hero-particle,
+  .hero-shimmer { display: none !important; }
+  /* Keep the LIVE signal bars visible but static at a mid height. */
+  .hero-eq-bar { transform: scaleY(0.7); }
+  .hero-react-ring { opacity: 0 !important; }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Winners hero — gold trophy. A very restrained premium treatment: a tiny     */
+/* vertical float, a slow glow breathe, and gently fading sparkles. No spin,   */
+/* no bounce. All disabled under prefers-reduced-motion.                       */
+/* -------------------------------------------------------------------------- */
+@keyframes trophy-float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+.trophy-float {
+  animation: trophy-float 3.6s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes trophy-glow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.9; transform: scale(1.05); }
+}
+.trophy-glow {
+  animation: trophy-glow 4s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes trophy-sparkle {
+  0%, 100% { opacity: 0.2; transform: scale(0.85); }
+  50%      { opacity: 1; transform: scale(1); }
+}
+.trophy-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: trophy-sparkle 2.8s ease-in-out infinite;
+}
+.trophy-sparkle-2 { animation-delay: 0.9s; }
+.trophy-sparkle-3 { animation-delay: 1.7s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .trophy-float,
+  .trophy-glow,
+  .trophy-sparkle {
+    animation: none !important;
+  }
+  .trophy-float { transform: none; }
+  .trophy-glow { opacity: 0.7; transform: scale(1); }
+  .trophy-sparkle { opacity: 0.85; }
+}

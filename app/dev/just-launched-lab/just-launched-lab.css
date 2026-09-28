@@ -1,0 +1,731 @@
+/* ============================================================
+   JUST LAUNCHED — VISUAL LAB (dev only)
+   Hand-crafted, CSS-only perimeter energy concepts.
+   No JS animation loops. No canvas. transform/opacity/
+   custom-property paint only. Reduced-motion fallbacks below.
+   ============================================================ */
+
+/* Smoothly animatable angle for the traveling conic bolts.
+   Registered so the browser can interpolate <angle> per frame. */
+@property --jl-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@property --jl-angle2 {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.jl-lab {
+  --jl-radius: 22px;
+  --jl-ring: 2.5px;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1a0526 0%, transparent 60%),
+    linear-gradient(180deg, #070009 0%, #0a0011 60%, #05000a 100%);
+  color: #fff;
+  padding: clamp(20px, 4vw, 56px);
+}
+
+.jl-lab-head {
+  max-width: 1200px;
+  margin: 0 auto clamp(24px, 4vw, 44px);
+}
+.jl-lab-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #ff8a3d;
+  font-weight: 800;
+}
+.jl-lab-title {
+  font-size: clamp(26px, 4vw, 40px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin: 8px 0 6px;
+  line-height: 1.05;
+}
+.jl-lab-sub {
+  color: #b9a8c9;
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+.jl-grid {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: clamp(28px, 4vw, 44px);
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .jl-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+.jl-col { display: flex; flex-direction: column; gap: 14px; }
+.jl-concept-label {
+  display: flex; align-items: baseline; gap: 8px;
+}
+.jl-concept-label b { font-size: 15px; font-weight: 900; letter-spacing: 0.02em; }
+.jl-concept-label span { font-size: 12px; color: #a99bbb; }
+
+/* ============================================================
+   THE CARD (shared shell — matches WTF rounded-[22px] + dark base)
+   ============================================================ */
+.jl-card {
+  position: relative;
+  border-radius: var(--jl-radius);
+  background: linear-gradient(180deg, #09000f 0%, #0b0013 52%, #07000c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.065);
+  isolation: isolate;
+  overflow: visible; /* let ambient glow bleed slightly */
+}
+
+/* Layers (children so each concept can stack multiple independent
+   timings without fighting over ::before/::after). */
+.jl-layer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Perimeter ring technique: paint a full-box gradient, then punch out
+   the interior with a composited mask so only a border ring remains.
+   Rotating the conic inside this ring makes the bolt travel through the
+   corners with no visible square layer. */
+.jl-ring,
+.jl-spark,
+.jl-heatring,
+.jl-halo,
+.jl-flarehead {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--jl-ring);
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Ambient outer glow — soft, non-rotating, cheap (opacity/transform only). */
+.jl-glow {
+  position: absolute;
+  inset: -14px;
+  border-radius: calc(var(--jl-radius) + 14px);
+  pointer-events: none;
+  z-index: -1;
+  opacity: 0.55;
+}
+
+/* Card content */
+.jl-content { position: relative; z-index: 2; padding: 14px; }
+
+.jl-prize {
+  position: relative;
+  border-radius: 14px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+  background:
+    radial-gradient(120% 90% at 20% 10%, rgba(255, 138, 61, 0.25), transparent 55%),
+    linear-gradient(135deg, #2a0b3d 0%, #12071e 60%, #1a0510 100%);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.jl-prize-kicker {
+  font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #ffd27a; font-weight: 800;
+}
+.jl-prize-title { font-size: 22px; font-weight: 900; letter-spacing: -0.01em; line-height: 1; margin-top: 4px; }
+
+/* JUST LAUNCHED badge */
+.jl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 14px;
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-weight: 900;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fff;
+  background: linear-gradient(180deg, rgba(255, 90, 20, 0.22), rgba(255, 40, 0, 0.1));
+  box-shadow: inset 0 0 0 1px rgba(255, 150, 90, 0.35);
+}
+.jl-badge .jl-bolt { font-size: 14px; filter: drop-shadow(0 0 6px rgba(255, 170, 80, 0.9)); }
+
+/* Progress — TRUE 1%, never inflated */
+.jl-progress-row {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 14px; margin-bottom: 6px;
+}
+.jl-progress-label { font-size: 11px; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: #ffb27a; }
+.jl-progress-pct { font-size: 11px; font-weight: 800; color: #cbb8dd; font-variant-numeric: tabular-nums; }
+.jl-track {
+  height: 7px; width: 100%; border-radius: 999px;
+  background: rgba(0, 0, 0, 0.7);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+.jl-fill {
+  height: 100%; width: 1%; border-radius: 999px;
+  background: linear-gradient(90deg, #ffb347, #ff4db8);
+  box-shadow: 0 0 10px rgba(255, 90, 60, 0.7);
+}
+
+/* ============================================================
+   CONCEPT A — ELECTRIC IGNITION
+   Fast, irregular bolt (electric orange / hot white / red + violet
+   secondary spark). Bright head -> hot trail -> transparent.
+   ============================================================ */
+.jl-a .jl-ring {
+  background: conic-gradient(
+    from var(--jl-angle),
+    rgba(255, 61, 0, 0) 0deg,
+    rgba(255, 61, 0, 0) 232deg,
+    rgba(120, 0, 8, 0.45) 258deg,
+    rgba(200, 30, 0, 0.8) 296deg,
+    rgba(255, 90, 0, 0.95) 326deg,
+    rgba(255, 170, 60, 1) 344deg,
+    #ffffff 351deg,
+    rgba(255, 150, 40, 0.95) 356deg,
+    rgba(255, 61, 0, 0.5) 360deg
+  );
+  animation: jl-spin-a 1.6s cubic-bezier(0.7, 0, 0.35, 1) infinite;
+  filter: saturate(1.15);
+}
+/* Secondary spark — thin violet/white flare, offset & slightly faster */
+.jl-a .jl-spark {
+  background: conic-gradient(
+    from var(--jl-angle2),
+    transparent 0deg,
+    transparent 344deg,
+    rgba(255, 255, 255, 0.85) 351deg,
+    rgba(180, 70, 255, 0.75) 355deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  animation: jl-spin-a2 1.45s linear infinite;
+  opacity: 0.9;
+}
+.jl-a .jl-glow {
+  background: radial-gradient(60% 60% at 50% 50%, rgba(255, 90, 20, 0.5), transparent 70%);
+  animation: jl-breathe 2.4s ease-in-out infinite;
+}
+
+/* Irregular travel so it reads as a live current, not a spinner */
+@keyframes jl-spin-a {
+  0%   { --jl-angle: 0deg; }
+  42%  { --jl-angle: 168deg; }
+  55%  { --jl-angle: 182deg; }
+  100% { --jl-angle: 360deg; }
+}
+@keyframes jl-spin-a2 {
+  0%   { --jl-angle2: 120deg; }
+  100% { --jl-angle2: 480deg; }
+}
+
+/* ============================================================
+   CONCEPT B — FIRE RUNNER
+   Warmer, slightly slower hot section + breathing heat ring +
+   periodic flare. Feels like the card "caught fire".
+   ============================================================ */
+.jl-b .jl-ring {
+  background: conic-gradient(
+    from var(--jl-angle),
+    rgba(255, 61, 0, 0) 0deg,
+    rgba(255, 61, 0, 0) 210deg,
+    rgba(90, 6, 0, 0.5) 244deg,
+    rgba(200, 40, 0, 0.85) 292deg,
+    rgba(255, 110, 20, 0.98) 328deg,
+    rgba(255, 200, 120, 1) 346deg,
+    #fff4e0 352deg,
+    rgba(255, 150, 40, 0.9) 357deg,
+    rgba(150, 20, 0, 0.4) 360deg
+  );
+  animation: jl-spin-b 2.2s linear infinite;
+}
+/* Breathing heat — a warm, blurred-feel ring whose intensity pulses
+   on a different clock than the runner. */
+.jl-b .jl-heatring {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 80, 0, 0.35),
+    rgba(255, 40, 0, 0.15),
+    rgba(255, 120, 20, 0.4),
+    rgba(255, 40, 0, 0.15),
+    rgba(255, 80, 0, 0.35)
+  );
+  animation: jl-heat-breathe 2.8s ease-in-out infinite;
+}
+/* Periodic flare — the leading edge briefly flashes brighter/wider */
+.jl-b .jl-spark {
+  background: conic-gradient(
+    from var(--jl-angle),
+    transparent 0deg,
+    transparent 338deg,
+    rgba(255, 220, 150, 0.9) 350deg,
+    #ffffff 353deg,
+    rgba(255, 180, 80, 0.9) 356deg,
+    transparent 362deg
+  );
+  mix-blend-mode: screen;
+  animation:
+    jl-spin-b 2.2s linear infinite,
+    jl-flare 3.5s ease-in-out infinite;
+}
+.jl-b .jl-glow {
+  background: radial-gradient(60% 60% at 50% 55%, rgba(255, 70, 10, 0.55), transparent 72%);
+  animation: jl-breathe 2.8s ease-in-out infinite;
+}
+
+@keyframes jl-spin-b { to { --jl-angle: 360deg; } }
+@keyframes jl-heat-breathe {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 0.75; }
+}
+@keyframes jl-flare {
+  0%, 78%, 100% { opacity: 0; }
+  84%           { opacity: 1; }
+  92%           { opacity: 0.35; }
+}
+
+/* ============================================================
+   CONCEPT C — WTF ENERGY BURST
+   The dramatic one: runner + heat pulse + spark + inner shimmer +
+   text glow, all on DIFFERENT clocks so it never looks mechanical.
+   perimeter 1.8s / heat 2.8s / spark 3.5s / text 2.2s / shimmer 3.1s
+   ============================================================ */
+.jl-c .jl-ring {
+  background: conic-gradient(
+    from var(--jl-angle),
+    rgba(255, 61, 0, 0) 0deg,
+    rgba(255, 61, 0, 0) 224deg,
+    rgba(120, 0, 30, 0.5) 252deg,
+    rgba(220, 30, 10, 0.85) 298deg,
+    rgba(255, 100, 20, 0.98) 330deg,
+    rgba(255, 190, 90, 1) 346deg,
+    #ffffff 351deg,
+    rgba(255, 120, 200, 0.9) 355deg,
+    rgba(180, 40, 120, 0.45) 360deg
+  );
+  animation: jl-spin-c 1.8s cubic-bezier(0.6, 0.02, 0.4, 1) infinite;
+  filter: saturate(1.2);
+}
+.jl-c .jl-heatring {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 70, 0, 0.3),
+    rgba(255, 40, 160, 0.18),
+    rgba(255, 120, 20, 0.36),
+    rgba(255, 40, 160, 0.18),
+    rgba(255, 70, 0, 0.3)
+  );
+  animation: jl-heat-breathe 2.8s ease-in-out infinite;
+}
+.jl-c .jl-spark {
+  background: conic-gradient(
+    from var(--jl-angle2),
+    transparent 0deg,
+    transparent 340deg,
+    rgba(255, 255, 255, 0.95) 350deg,
+    rgba(255, 90, 210, 0.85) 354deg,
+    transparent 360deg
+  );
+  mix-blend-mode: screen;
+  animation:
+    jl-spin-c2 3.5s linear infinite,
+    jl-flare 3.5s ease-in-out infinite;
+}
+/* Inner shimmer — a diagonal sheen drifting across the content via
+   background-position (compositor-cheap). */
+.jl-c .jl-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    115deg,
+    transparent 30%,
+    rgba(255, 200, 150, 0.08) 46%,
+    rgba(255, 255, 255, 0.16) 50%,
+    rgba(255, 160, 220, 0.08) 54%,
+    transparent 70%
+  );
+  background-size: 260% 260%;
+  animation: jl-shimmer 3.1s ease-in-out infinite;
+}
+.jl-c .jl-glow {
+  background:
+    radial-gradient(55% 55% at 35% 45%, rgba(255, 70, 10, 0.5), transparent 70%),
+    radial-gradient(55% 55% at 70% 60%, rgba(255, 40, 170, 0.4), transparent 72%);
+  animation: jl-breathe 3.3s ease-in-out infinite;
+}
+.jl-c .jl-badge { animation: jl-text-glow 2.2s ease-in-out infinite; }
+
+@keyframes jl-spin-c {
+  0%   { --jl-angle: 0deg; }
+  46%  { --jl-angle: 172deg; }
+  58%  { --jl-angle: 188deg; }
+  100% { --jl-angle: 360deg; }
+}
+@keyframes jl-spin-c2 {
+  0%   { --jl-angle2: 200deg; }
+  100% { --jl-angle2: 560deg; }
+}
+@keyframes jl-shimmer {
+  0%   { background-position: 120% 0%; }
+  100% { background-position: -60% 100%; }
+}
+@keyframes jl-text-glow {
+  0%, 100% { text-shadow: 0 0 0 rgba(255, 170, 80, 0); box-shadow: inset 0 0 0 1px rgba(255, 150, 90, 0.35); }
+  50%      { text-shadow: 0 0 14px rgba(255, 150, 60, 0.75); box-shadow: inset 0 0 0 1px rgba(255, 180, 110, 0.7), 0 0 18px rgba(255, 90, 30, 0.35); }
+}
+
+/* Shared ambient breathe (opacity + transform only) */
+@keyframes jl-breathe {
+  0%, 100% { opacity: 0.4; transform: scale(0.985); }
+  50%      { opacity: 0.7; transform: scale(1.02); }
+}
+
+/* ============================================================
+   CONCEPT D — WTF MASTER (refined hybrid)
+   A's fast irregular runner + a SHARP white-hot head, B's occasional
+   ignition flare, C's inner shimmer / ambient energy — with pink/magenta
+   demoted to an OCCASIONAL accent. Dominant palette: white-hot -> orange
+   -> red. Energy hugs the edge (sharp runner + a thin traveling heat halo),
+   not a giant floating aura.
+   Clocks: runner ~1.6s · heat ~2.8s · shimmer ~3.1s · flare ~3.7s ·
+   text response ~3.7s (loosely, not identical).
+   ============================================================ */
+
+/* FLAME RUNNER: most of the perimeter is dark, then a long tapering heat
+   trail — deep-red ember at the back, building through red -> orange ->
+   hot yellow -> a compact white-hot ignition tip at the leading edge.
+   The long warm falloff (not a thin even streak) is what reads as FLAME
+   rather than an electric bolt. A subtle irregular flicker rides on top so
+   the trail breathes like heat. Pink is absent here (kept for the lick). */
+.jl-d .jl-ring {
+  background: conic-gradient(
+    from var(--jl-angle),
+    transparent 0deg,
+    transparent 266deg,
+    rgba(110, 6, 0, 0.26) 290deg,      /* ember fade-in */
+    rgba(178, 22, 0, 0.54) 312deg,     /* deep red */
+    rgba(230, 52, 0, 0.82) 330deg,     /* red-orange body */
+    rgba(255, 110, 12, 0.96) 344deg,   /* hot orange */
+    rgba(255, 190, 74, 1) 352deg,      /* hot yellow */
+    rgba(255, 242, 208, 1) 357deg,     /* pale gold */
+    #ffffff 359deg,                    /* white-hot tip */
+    transparent 360deg
+  );
+  animation:
+    jl-spin-d 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    jl-flame-flicker 0.55s ease-in-out infinite;
+  filter: saturate(1.22);
+  z-index: 1;
+}
+
+/* Heat halo travels WITH the flame, slightly outside the sharp ring and
+   softly blurred — the "heat haze" hugging the edge. It flickers on its own
+   clock so the glow shimmers like radiated heat, NOT a full-card aura. */
+.jl-d .jl-halo {
+  padding: 7px;
+  background: conic-gradient(
+    from var(--jl-angle),
+    transparent 0deg,
+    transparent 300deg,
+    rgba(255, 68, 0, 0.4) 326deg,
+    rgba(255, 148, 48, 0.72) 346deg,
+    rgba(255, 214, 148, 0.92) 356deg,
+    rgba(255, 120, 20, 0.4) 360deg
+  );
+  filter: blur(7px);
+  opacity: 0.6;
+  animation:
+    jl-spin-d 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    jl-halo-flicker 0.67s ease-in-out infinite;
+}
+
+/* Ambient heat — dominant orange/red with only a faint pink whisper. */
+.jl-d .jl-heatring {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 74, 0, 0.3),
+    rgba(255, 40, 150, 0.1),
+    rgba(255, 120, 20, 0.34),
+    rgba(255, 40, 150, 0.1),
+    rgba(255, 74, 0, 0.3)
+  );
+  animation: jl-heat-breathe 2.8s ease-in-out infinite;
+}
+
+/* IGNITION LICK — mostly invisible; every ~3.7s the leading edge briefly
+   flares into a hotter, whiter tongue of flame that reaches slightly ahead
+   of the tip, with only a tiny secondary WTF-pink ember. Restrained: one
+   lick, no particle shower. */
+.jl-d .jl-flarehead {
+  padding: 4px;
+  background: conic-gradient(
+    from var(--jl-angle),
+    transparent 0deg,
+    transparent 347deg,
+    rgba(255, 168, 40, 0.6) 353deg,
+    rgba(255, 240, 200, 0.98) 357deg,
+    #ffffff 359.4deg,
+    rgba(255, 150, 220, 0.5) 360deg,
+    transparent 360deg
+  );
+  filter: blur(1px);
+  mix-blend-mode: screen;
+  opacity: 0;
+  transform-origin: center;
+  animation:
+    jl-spin-d 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    jl-flare-d 3.7s ease-in-out infinite;
+}
+
+/* Inner shimmer — very subtle diagonal sheen (compositor-cheap). */
+.jl-d .jl-shimmer {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  background: linear-gradient(
+    115deg,
+    transparent 34%,
+    rgba(255, 200, 150, 0.06) 47%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 170, 210, 0.05) 53%,
+    transparent 66%
+  );
+  background-size: 260% 260%;
+  animation: jl-shimmer 3.1s ease-in-out infinite;
+}
+
+/* Restrained outer glow — hugs the edge (small inset), warm, low opacity.
+   Gets a brief flash synced loosely to the flare. */
+.jl-d .jl-glow {
+  inset: -8px;
+  border-radius: calc(var(--jl-radius) + 8px);
+  background: radial-gradient(62% 62% at 50% 50%, rgba(255, 82, 12, 0.42), transparent 72%);
+  opacity: 0.45;
+  animation: jl-glow-flash-d 3.7s ease-in-out infinite;
+}
+
+@keyframes jl-spin-d {
+  0%   { --jl-angle: 0deg; }
+  40%  { --jl-angle: 158deg; }
+  52%  { --jl-angle: 178deg; }
+  100% { --jl-angle: 360deg; }
+}
+/* Irregular heat flicker — cheap opacity-only wobble so the flame breathes
+   instead of gliding like a clean electric streak. */
+@keyframes jl-flame-flicker {
+  0%   { opacity: 1; }
+  16%  { opacity: 0.84; }
+  31%  { opacity: 1; }
+  44%  { opacity: 0.9; }
+  60%  { opacity: 1; }
+  73%  { opacity: 0.82; }
+  87%  { opacity: 0.95; }
+  100% { opacity: 1; }
+}
+@keyframes jl-halo-flicker {
+  0%   { opacity: 0.6; }
+  20%  { opacity: 0.44; }
+  40%  { opacity: 0.62; }
+  58%  { opacity: 0.5; }
+  76%  { opacity: 0.64; }
+  100% { opacity: 0.6; }
+}
+@keyframes jl-flare-d {
+  0%, 80%, 100% { opacity: 0; transform: scale(1); }
+  86%           { opacity: 1; transform: scale(1.02); }
+  93%           { opacity: 0.32; transform: scale(1.005); }
+}
+@keyframes jl-glow-flash-d {
+  0%, 78%, 100% { opacity: 0.42; }
+  87%           { opacity: 0.7; }
+}
+
+/* ---- Concept D text: TV game-show graphic ---- */
+.jl-d-text { margin-top: 14px; }
+.jl-d-headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 900;
+  font-size: clamp(20px, 5.2vw, 26px);
+  line-height: 0.98;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-stretch: condensed;
+  transform: scaleX(0.94);
+  transform-origin: left center;
+  color: #fff;
+  /* mostly stable subtle hot glow; flash is a separate loosely-timed layer */
+  animation: jl-d-textflash 3.7s ease-in-out infinite;
+}
+.jl-d-headline .jl-bolt {
+  font-size: 0.82em;
+  transform: none;
+  filter: drop-shadow(0 0 7px rgba(255, 175, 80, 0.95));
+}
+.jl-d-sub {
+  margin-top: 6px;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffb98a;
+  font-stretch: condensed;
+}
+.jl-d-sold {
+  margin-top: 12px;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #cbb8dd;
+  font-variant-numeric: tabular-nums;
+}
+/* Understated bar for D — the perimeter is the excitement, not this. */
+.jl-d .jl-track {
+  height: 5px;
+  margin-top: 6px;
+  background: rgba(0, 0, 0, 0.6);
+}
+.jl-d .jl-fill {
+  width: 1%;
+  background: linear-gradient(90deg, #ff9a3d, #ff5a1e);
+  box-shadow: 0 0 6px rgba(255, 90, 40, 0.55);
+}
+
+@keyframes jl-d-textflash {
+  0%, 80%, 100% { text-shadow: 0 0 10px rgba(255, 138, 50, 0.32); }
+  87%           { text-shadow: 0 0 18px rgba(255, 172, 74, 0.85), 0 0 5px rgba(255, 255, 255, 0.55); }
+}
+
+/* ============================================================
+   REALISTIC CONTEXTS — the D energy border wrapped around the ACTUAL
+   production layouts (PublicGiveawayCard compact shell + TicketSelector
+   purchase panel). Card internals are reproduced with real WTF Tailwind
+   classes in the page; these rules only host the animated ring so it
+   aligns to the real rounded-[22px] edge and sits ABOVE the content.
+   ============================================================ */
+
+/* Card wrapper: same radius + dark base as the real compact card. The ring
+   layers are absolute siblings placed AFTER the content, so they paint on the
+   card's edge above the (isolated) content without blocking CTA clicks. */
+.jl-realcard {
+  --jl-radius: 22px;
+  --jl-ring: 2.5px;
+  position: relative;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #09000f 0%, #0b0013 52%, #07000c 100%);
+  isolation: isolate;
+}
+/* The clipped content island — its own stacking context so internal z-10
+   overlays (badges) stay contained and the ring siblings render above it. */
+.jl-realcard-inner {
+  position: relative;
+  isolation: isolate;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* Launch header for the TicketSelector context. Smaller radius; the animated
+   border frames ONLY this attention banner, leaving the purchase panel below
+   visually calm so the gold CTA stays dominant. */
+.jl-launchbox {
+  --jl-radius: 16px;
+  --jl-ring: 2px;
+  position: relative;
+  border-radius: 16px;
+  background: linear-gradient(180deg, #12061c 0%, #0c0414 100%);
+  isolation: isolate;
+}
+.jl-launchbox-inner {
+  position: relative;
+  isolation: isolate;
+  border-radius: 16px;
+  overflow: hidden;
+  padding: 18px 18px 16px;
+}
+
+/* Layout scaffold for the three realistic contexts. */
+.jl-real {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: clamp(28px, 4vw, 48px);
+  align-items: flex-start;
+}
+.jl-real-item { display: flex; flex-direction: column; gap: 12px; }
+.jl-real-item > label {
+  font-size: 12px; font-weight: 800; letter-spacing: 0.06em; color: #a99bbb;
+}
+.jl-real-desktop { width: 360px; max-width: 100%; }
+.jl-real-mobile  { width: 320px; max-width: 100%; }
+.jl-real-ticket  { width: 400px; max-width: 100%; }
+
+.jl-divider {
+  max-width: 1200px;
+  margin: clamp(40px, 6vw, 72px) auto clamp(20px, 3vw, 32px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 16px;
+}
+.jl-divider h2 { font-size: 15px; font-weight: 800; color: #cbb8dd; }
+.jl-divider p { font-size: 12px; color: #8f81a1; margin-top: 4px; }
+
+/* ============================================================
+   REDUCED MOTION — freeze into a premium static state.
+   Bolt parks at a flattering angle; glows stay soft & still.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .jl-ring,
+  .jl-spark,
+  .jl-heatring,
+  .jl-halo,
+  .jl-flarehead,
+  .jl-glow,
+  .jl-shimmer,
+  .jl-badge,
+  .jl-d-headline {
+    animation: none !important;
+  }
+  .jl-a .jl-ring { --jl-angle: 315deg; }
+  .jl-b .jl-ring { --jl-angle: 320deg; }
+  .jl-c .jl-ring { --jl-angle: 318deg; }
+  .jl-d .jl-ring,
+  .jl-d .jl-halo { --jl-angle: 322deg; }
+  .jl-a .jl-spark,
+  .jl-b .jl-spark,
+  .jl-c .jl-spark { opacity: 0.5; }
+  .jl-b .jl-heatring,
+  .jl-c .jl-heatring,
+  .jl-d .jl-heatring { opacity: 0.5; }
+  .jl-d .jl-flarehead { opacity: 0; }
+  .jl-glow { opacity: 0.5; transform: none; }
+  .jl-c .jl-badge {
+    box-shadow: inset 0 0 0 1px rgba(255, 180, 110, 0.7), 0 0 14px rgba(255, 90, 30, 0.3);
+  }
+  .jl-d-headline { text-shadow: 0 0 12px rgba(255, 150, 60, 0.5); }
+}

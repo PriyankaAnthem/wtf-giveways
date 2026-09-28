@@ -1,0 +1,1962 @@
+/* =========================================================================
+   WTF "Spin To Win" — isolated demo styles (scoped to /demo/hannha/frankie/wheel)
+   Nothing here is imported by the product. All classes are stw- prefixed.
+   ========================================================================= */
+
+.stw-page {
+  display: contents;
+}
+
+/* --- Full-screen game shell --------------------------------------------- */
+.stw-root {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 2147483000; /* cover site header/nav for this demo only */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  color: #fff;
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  background:
+    radial-gradient(120% 70% at 50% -8%, rgba(78, 20, 66, 0.85) 0%, transparent 55%),
+    radial-gradient(90% 60% at 50% 118%, rgba(40, 8, 30, 0.9) 0%, transparent 60%),
+    linear-gradient(180deg, rgba(20, 7, 18, 0.82), rgba(8, 3, 14, 0.95)),
+    url("/demo/wtf-spin/background_stage_reference.webp") center / cover no-repeat;
+  background-color: #0a0410;
+}
+
+.stw-stage {
+  min-height: 100%;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 14px 12px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* --- Mute control -------------------------------------------------------- */
+.stw-mute {
+  position: fixed;
+  bottom: 16px;
+  right: 12px;
+  z-index: 10;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(247, 215, 116, 0.6);
+  background: rgba(12, 6, 16, 0.7);
+  backdrop-filter: blur(4px);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 120ms ease, border-color 120ms ease;
+}
+.stw-mute:hover {
+  transform: scale(1.06);
+  border-color: rgba(247, 215, 116, 0.95);
+}
+
+/* --- Persistent status bar (spins / winnings / credit) ------------------- */
+.stw-status {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 2180 / 640;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 5%;
+  /* Gold-framed status bar art holds the three compartments. */
+  background: url("/demo/wtf-spin/frame-statusbar.png") center / 100% 100% no-repeat;
+}
+.stw-status-cell {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 0 2px;
+  text-align: center;
+}
+.stw-status-sep {
+  flex: 0 0 1px;
+  align-self: center;
+  width: 1px;
+  height: 46%;
+  background: linear-gradient(180deg, transparent, rgba(247, 215, 116, 0.35), transparent);
+}
+/* (5A) Small labels — Montserrat 800. */
+.stw-status-label {
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-size: clamp(9px, 2.2vw, 13px);
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 244, 214, 0.92);
+  font-weight: 800;
+  white-space: nowrap;
+}
+/* (5B) Values — Anton. */
+.stw-status-value {
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(20px, 5.4vw, 40px);
+  line-height: 1;
+  white-space: nowrap;
+  transform-origin: center;
+}
+.stw-status-value[data-kind="spins"] {
+  letter-spacing: 0.01em;
+  color: #ffe28a;
+}
+.stw-status-value[data-kind="cash"] {
+  letter-spacing: -0.02em;
+  color: #ffd55d;
+  text-shadow: 0 0 10px rgba(255, 190, 50, 0.18);
+}
+.stw-status-value[data-kind="credit"] {
+  letter-spacing: -0.02em;
+  color: #d8a6ff;
+  text-shadow: 0 0 10px rgba(196, 120, 255, 0.2);
+}
+.stw-status-value[data-bump="true"] {
+  animation: stw-status-bump 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes stw-status-bump {
+  0% { transform: scale(1); }
+  30% { transform: scale(1.32); filter: drop-shadow(0 0 10px rgba(247, 215, 116, 0.9)); }
+  100% { transform: scale(1); }
+}
+
+/* --- Title --------------------------------------------------------------- */
+.stw-title {
+  margin: 2px 0 0;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-size: clamp(30px, 9vw, 48px);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff6d6, #f7d774 55%, #c8961f);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+}
+.stw-title-amp {
+  -webkit-text-fill-color: #e21f28;
+  color: #e21f28;
+  font-size: 0.7em;
+  vertical-align: middle;
+}
+
+/* --- Wheel --------------------------------------------------------------- */
+.stw-wheel-wrap {
+  position: relative;
+  width: min(94vw, 520px);
+  aspect-ratio: 1 / 1;
+  margin: 2px auto 4px;
+}
+
+.stw-pointer {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: 50% 16%;
+  z-index: 8;
+  filter: drop-shadow(0 5px 6px rgba(0, 0, 0, 0.6));
+  will-change: transform;
+}
+.stw-pointer img {
+  display: block;
+  width: clamp(48px, 13vw, 66px);
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.stw-wheel {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: 1 / 1;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.6));
+}
+
+/* Face and rim share the SAME square box (inset:0, 100% x 100%) so they are
+   pixel-for-pixel concentric. The face rotates about its exact visual centre. */
+.stw-rotor {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+  transform: rotate(0deg);
+  transform-origin: 50% 50%;
+}
+.stw-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* contain (never cover) so the baked transparent safe-inset is preserved and
+     the artwork is never cropped or zoomed. Rotor applies rotation ONLY. */
+  object-fit: contain;
+  object-position: center;
+  transform-origin: 50% 50%;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.stw-rim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* Identical box + fit as the face so the two are pixel-for-pixel concentric. */
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.stw-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 30%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 7;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.5));
+}
+
+/* --- Celebration layers -------------------------------------------------- */
+.stw-dim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(5, 2, 10, 0.15) 0%, rgba(5, 2, 10, 0.62) 78%);
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+  z-index: 2;
+}
+.stw-wheel--celebrate .stw-dim {
+  opacity: 1;
+}
+
+.stw-highlight {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.stw-wheel--celebrate .stw-highlight {
+  opacity: 1;
+}
+.stw-highlight-wedge {
+  fill: rgba(247, 215, 116, 0.16);
+  stroke: #ffe9a8;
+  stroke-width: 1.4;
+  filter: drop-shadow(0 0 6px rgba(247, 215, 116, 0.95));
+  animation: stw-wedge-pulse 0.9s ease-in-out infinite;
+}
+.stw-wheel[data-celebrate-type="free_spin"] .stw-highlight-wedge {
+  stroke: #d8b6ff;
+  fill: rgba(160, 107, 255, 0.2);
+  filter: drop-shadow(0 0 6px rgba(180, 130, 255, 0.95));
+}
+.stw-wheel[data-celebrate-type="loss"] .stw-highlight-wedge {
+  fill: rgba(247, 215, 116, 0.08);
+  stroke: rgba(247, 215, 116, 0.65);
+  filter: none;
+  animation: none;
+}
+@keyframes stw-wedge-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.stw-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: 150%;
+  transform: translate(-50%, -50%) scale(0.3);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 245, 210, 0.9) 0%,
+    rgba(247, 215, 116, 0.55) 22%,
+    rgba(247, 215, 116, 0) 60%
+  );
+  mix-blend-mode: screen;
+  pointer-events: none;
+  z-index: 5;
+  animation: stw-burst 900ms ease-out forwards;
+}
+.stw-wheel[data-celebrate-type="free_spin"] .stw-burst {
+  background: radial-gradient(
+    circle,
+    rgba(235, 220, 255, 0.9) 0%,
+    rgba(160, 107, 255, 0.5) 24%,
+    rgba(160, 107, 255, 0) 62%
+  );
+}
+@keyframes stw-burst {
+  0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+  35% { opacity: 1; }
+  100% { transform: translate(-50%, -50%) scale(1.35); opacity: 0; }
+}
+
+/* Rim pulse during a win */
+.stw-wheel--celebrate .stw-rim {
+  animation: stw-rim-pulse 0.75s ease-in-out 3;
+}
+@keyframes stw-rim-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.5) drop-shadow(0 0 14px rgba(247, 215, 116, 0.85)); }
+}
+
+/* Travelling light: a bright arc masked to the rim band, sweeping clockwise
+   twice (2 × 0.55s) so the bulbs read as "chasing" around the wheel. */
+.stw-rimlight {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(255, 245, 210, 0.95) 14deg,
+    transparent 44deg,
+    transparent 180deg,
+    rgba(255, 245, 210, 0.85) 194deg,
+    transparent 224deg,
+    transparent 360deg
+  );
+  -webkit-mask: radial-gradient(circle at 50% 50%, transparent 0 78%, #000 81% 96%, transparent 99%);
+  mask: radial-gradient(circle at 50% 50%, transparent 0 78%, #000 81% 96%, transparent 99%);
+  animation: stw-rimlight-sweep 0.55s linear 2;
+}
+.stw-wheel[data-celebrate-type="free_spin"] .stw-rimlight,
+.stw-wheel[data-celebrate-type="credit"] .stw-rimlight {
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(226, 205, 255, 0.95) 14deg,
+    transparent 44deg,
+    transparent 180deg,
+    rgba(226, 205, 255, 0.85) 194deg,
+    transparent 224deg,
+    transparent 360deg
+  );
+}
+@keyframes stw-rimlight-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Celebratory screen shake applied to the wheel area only (not the whole
+   scrollable page), so the status bar stays readable. ~8 micro-shakes,
+   3–5px, easing out cleanly. */
+.stw-wheel-wrap[data-shake="strong"] {
+  animation: stw-shake-strong 0.75s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+.stw-wheel-wrap[data-shake="soft"] {
+  animation: stw-shake-soft 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes stw-shake-strong {
+  0% { transform: translate3d(0, 0, 0); }
+  10% { transform: translate3d(-5px, 2px, 0); }
+  22% { transform: translate3d(5px, -3px, 0); }
+  34% { transform: translate3d(-4px, 3px, 0); }
+  46% { transform: translate3d(4px, -2px, 0); }
+  58% { transform: translate3d(-3px, 2px, 0); }
+  70% { transform: translate3d(3px, -1px, 0); }
+  84% { transform: translate3d(-1px, 1px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+@keyframes stw-shake-soft {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-2px, 1px, 0); }
+  40% { transform: translate3d(2px, -1px, 0); }
+  60% { transform: translate3d(-2px, 1px, 0); }
+  80% { transform: translate3d(1px, -1px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* --- Win reveal: framed game-show card over dimmed wheel ---------------- */
+.stw-reveal {
+  position: absolute;
+  /* Spill beyond the square wheel wrap so the portrait card is never clipped. */
+  inset: -18% -6%;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 9;
+  text-align: center;
+}
+.stw-reveal-scrim {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(60% 55% at 50% 48%, rgba(6, 2, 10, 0.55), rgba(4, 1, 8, 0.9) 100%);
+  animation: stw-reveal-fade 260ms ease both;
+}
+@keyframes stw-reveal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.stw-reveal-card {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  animation: stw-reveal-fade 300ms ease both;
+}
+
+/* Starburst bloom behind the frame. */
+.stw-reveal-burst {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 150%;
+  height: auto;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  animation: stw-burst-in 900ms ease-out both, stw-burst-spin 32s linear infinite;
+  mix-blend-mode: screen;
+}
+.stw-reveal[data-type="credit"] .stw-reveal-burst,
+.stw-reveal[data-type="free_spin"] .stw-reveal-burst {
+  filter: hue-rotate(215deg) saturate(1.1);
+}
+@keyframes stw-burst-in {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.4) rotate(0deg); }
+  60% { opacity: 0.95; transform: translate(-50%, -50%) scale(1.06) rotate(6deg); }
+  100% { opacity: 0.85; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+@keyframes stw-burst-spin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+
+/* Crowned shield frame — the card body. */
+.stw-reveal-frame {
+  position: relative;
+  height: min(96%, 560px);
+  aspect-ratio: 1131 / 1450;
+  animation: stw-frame-pop 520ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.7));
+}
+@keyframes stw-frame-pop {
+  0% { transform: scale(0.7); opacity: 0; }
+  60% { transform: scale(1.04); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.stw-reveal-frame-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* Text layer inside the shield. */
+.stw-reveal-content {
+  position: absolute;
+  inset: 0;
+}
+
+/* The prize amount pops: scale .7 -> 1.04 -> 1.0, then a short glow pulse. */
+.stw-reveal-amt {
+  animation:
+    stw-amount-in 640ms cubic-bezier(0.2, 0.9, 0.25, 1) both,
+    stw-amount-glow 1.3s ease-in-out 640ms 2;
+}
+@keyframes stw-amount-in {
+  0% { transform: translate(-50%, -50%) scale(0.55); opacity: 0; }
+  55% { transform: translate(-50%, -50%) scale(1.14); opacity: 1; }
+  72% { transform: translate(-50%, -50%) scale(0.98); }
+  86% { transform: translate(-50%, -50%) scale(1.03); }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+@keyframes stw-amount-glow {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(247, 215, 116, 0.2)); }
+  50% { filter: drop-shadow(0 0 20px rgba(247, 215, 116, 0.95)); }
+}
+.stw-reveal-amount--free.stw-reveal-amt,
+.stw-reveal-amount--credit.stw-reveal-amt {
+  animation:
+    stw-amount-in 640ms cubic-bezier(0.2, 0.9, 0.25, 1) both,
+    stw-amount-glow-purple 1.3s ease-in-out 640ms 2;
+}
+@keyframes stw-amount-glow-purple {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(180, 130, 255, 0.2)); }
+  50% { filter: drop-shadow(0 0 20px rgba(180, 130, 255, 0.95)); }
+}
+
+/* --- (2A/3A) Kicker: "YOU JUST WON" / "YOU WON" — sits in the black banner. */
+.stw-reveal-kicker {
+  position: absolute;
+  top: 17%;
+  left: 8%;
+  right: 8%;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(18px, 4.2vw, 30px);
+  line-height: 1;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: #fff4c7;
+  text-shadow:
+    0 2px 0 #7b3d00,
+    0 5px 10px rgba(0, 0, 0, 0.65),
+    0 0 14px rgba(255, 201, 84, 0.3);
+}
+.stw-reveal-kicker--credit {
+  color: #fff4d2;
+  text-shadow:
+    0 2px 0 #58217a,
+    0 5px 10px rgba(0, 0, 0, 0.65),
+    0 0 14px rgba(201, 127, 255, 0.35);
+}
+
+/* --- (2B/3B) Hero amount — centred in the red shield panel. */
+.stw-reveal-amount {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 88%;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(84px, 20vw, 150px);
+  line-height: 0.88;
+  letter-spacing: -0.045em;
+  text-transform: uppercase;
+  text-align: center;
+  background: linear-gradient(
+    180deg,
+    #fff7c2 0%,
+    #ffe27a 18%,
+    #ffbf2f 42%,
+    #f59e00 68%,
+    #fff1a0 84%,
+    #c97900 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 2px #fff2a2;
+  text-shadow:
+    0 4px 0 #8a3400,
+    0 8px 0 #5b1a00,
+    0 14px 18px rgba(0, 0, 0, 0.72),
+    0 0 26px rgba(255, 185, 40, 0.55);
+}
+.stw-reveal-amount--credit {
+  background: linear-gradient(
+    180deg,
+    #fff7c2 0%,
+    #efd8ff 20%,
+    #cf8cff 45%,
+    #9b46ff 68%,
+    #ffe9a8 88%,
+    #7e2fd8 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px #f7deff;
+  text-shadow:
+    0 4px 0 #4f1f7d,
+    0 8px 0 #351153,
+    0 14px 18px rgba(0, 0, 0, 0.72),
+    0 0 24px rgba(188, 118, 255, 0.5);
+}
+
+/* --- (4) FREE / SPIN! — two huge stacked lines. */
+.stw-reveal-freespin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: clamp(48px, 13vw, 86px);
+  line-height: 0.95;
+  letter-spacing: 0.03em;
+}
+.stw-reveal-amount--free {
+  background: linear-gradient(
+    180deg,
+    #fff6bd 0%,
+    #f2d4ff 25%,
+    #cb84ff 55%,
+    #9f3dff 72%,
+    #ffe48f 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px #fff1c4;
+  text-shadow:
+    0 4px 0 #54218a,
+    0 8px 0 #331055,
+    0 14px 18px rgba(0, 0, 0, 0.7),
+    0 0 22px rgba(192, 113, 255, 0.45);
+}
+
+/* --- (2C/3C) Unit banner: CASH on ribbon / WTF CREDIT on purple bar. */
+.stw-reveal-banner {
+  position: absolute;
+  left: 50%;
+  bottom: 4%;
+  transform: translateX(-50%);
+  width: 104%;
+  display: grid;
+  place-items: center;
+  animation: stw-banner-in 520ms cubic-bezier(0.2, 0.9, 0.25, 1) 120ms both;
+}
+@keyframes stw-banner-in {
+  from { transform: translateX(-50%) translateY(14px) scale(0.9); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0) scale(1); opacity: 1; }
+}
+.stw-reveal-banner-img {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.55));
+}
+.stw-reveal-banner-text {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+}
+.stw-reveal-banner-text[data-type="cash"] {
+  font-size: clamp(26px, 7vw, 46px);
+  letter-spacing: 0.18em;
+  padding-left: 0.18em;
+  color: #fff0a5;
+  text-shadow:
+    0 3px 0 #7c3100,
+    0 6px 10px rgba(0, 0, 0, 0.6),
+    0 0 10px rgba(255, 195, 70, 0.25);
+}
+.stw-reveal-banner-text[data-type="credit"],
+.stw-reveal-banner-text[data-type="free_spin"] {
+  font-size: clamp(20px, 5.6vw, 38px);
+  letter-spacing: 0.13em;
+  padding-left: 0.13em;
+  color: #f4d3ff;
+  text-shadow:
+    0 2px 0 #4d1d74,
+    0 5px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Loss keeps a light-touch pill (no celebration frame). */
+.stw-reveal-noprize {
+  position: relative;
+  z-index: 1;
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-size: clamp(16px, 5vw, 24px);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: #f3e8c4;
+  background: rgba(10, 4, 12, 0.55);
+  padding: 8px 16px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1.5px rgba(247, 215, 116, 0.4);
+  animation: stw-reveal-fade 300ms ease both;
+}
+
+/* --- Spin button (pure-CSS glossy red/gold plate) ------------------------ */
+.stw-spin-btn {
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+  width: min(90vw, 420px);
+  aspect-ratio: 2180 / 660;
+  padding: 0;
+  border: none;
+  background: url("/demo/wtf-spin/frame-pill-red.png") center / contain no-repeat;
+  cursor: pointer;
+  filter: drop-shadow(0 10px 20px rgba(120, 6, 12, 0.5));
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.stw-spin-btn-gloss {
+  display: none;
+}
+/* (6) Primary CTA label — Anton. */
+.stw-spin-btn-label {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  height: 100%;
+  /* Nudge up so the label sits on the pill face, not its lower bevel. */
+  padding-bottom: 4%;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(24px, 6.4vw, 40px);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #fff5d0;
+  text-shadow:
+    0 3px 0 #7a1700,
+    0 6px 12px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+.stw-spin-btn:not(:disabled):hover {
+  filter: drop-shadow(0 10px 20px rgba(120, 6, 12, 0.5)) brightness(1.07);
+}
+.stw-spin-btn:not(:disabled):active {
+  transform: translateY(1px) scale(0.99);
+}
+.stw-spin-btn:disabled {
+  cursor: not-allowed;
+}
+.stw-spin-btn[data-state="empty"] {
+  filter: saturate(0.5) brightness(0.6);
+}
+.stw-spin-btn[data-spinning="true"] {
+  animation: stw-btn-pulse 0.9s ease-in-out infinite;
+}
+@keyframes stw-btn-pulse {
+  0%, 100% { filter: drop-shadow(0 10px 20px rgba(120, 6, 12, 0.5)); }
+  50% { filter: drop-shadow(0 10px 26px rgba(247, 215, 116, 0.7)); }
+}
+
+/* --- Claim winnings (secondary, demo stub) ------------------------------ */
+.stw-claim-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+.stw-claim {
+  padding: 9px 20px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(247, 215, 116, 0.7);
+  background: rgba(12, 6, 16, 0.6);
+  color: #f7d774;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 80ms ease;
+}
+.stw-claim:hover:not(:disabled) {
+  filter: brightness(1.18);
+}
+.stw-claim:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.stw-claim:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.stw-claim-msg {
+  margin: 0;
+  font-size: 12px;
+  color: #cdbfe0;
+}
+
+/* --- Free-spin flying ticket -------------------------------------------- */
+.stw-flyticket {
+  position: absolute;
+  top: 46%;
+  left: 50%;
+  z-index: 11;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.6));
+  animation: stw-fly 0.72s cubic-bezier(0.5, 0, 0.4, 1) forwards;
+}
+@keyframes stw-fly {
+  0% { transform: translate(-50%, -50%) scale(1.4) rotate(-8deg); opacity: 0; }
+  20% { opacity: 1; }
+  100% {
+    /* travel up to the YOUR SPINS counter near the top of the stage */
+    transform: translate(-50%, calc(-50% - 42vh)) scale(0.4) rotate(12deg);
+    opacity: 0;
+  }
+}
+
+/* --- Confetti ------------------------------------------------------------ */
+.stw-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 10;
+}
+.stw-confetti-bit {
+  position: absolute;
+  top: -6%;
+  border-radius: 2px;
+  animation-name: stw-fall;
+  animation-timing-function: cubic-bezier(0.4, 0.1, 0.6, 1);
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+  .stw-confetti-note {
+  border-radius: 3px;
+  background:
+    linear-gradient(120deg, #7fc98a 0%, #b7ecc0 45%, #6fbf88 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(30, 90, 45, 0.65),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.35),
+    0 1px 3px rgba(0, 0, 0, 0.4);
+  }
+@keyframes stw-fall {
+  0% { transform: translate(0, 0) rotate(var(--stw-rot)); opacity: 1; }
+  100% { transform: translate(var(--stw-drift), 108vh) rotate(calc(var(--stw-rot) + 540deg)); opacity: 0.9; }
+}
+
+/* --- Demo controls ------------------------------------------------------- */
+.stw-demo {
+  width: 100%;
+  max-width: 420px;
+  margin-top: 8px;
+  border-radius: 12px;
+  background: rgba(8, 4, 12, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+.stw-demo-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: #b9a7cf;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  cursor: pointer;
+}
+.stw-demo-chevron {
+  font-size: 10px;
+}
+.stw-demo-body {
+  padding: 4px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.stw-demo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  color: #cdbfe0;
+}
+.stw-demo-row select {
+  flex: 1;
+  max-width: 220px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  background: #17091f;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 13px;
+}
+.stw-demo-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stw-demo-grouplabel {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #9d8cba;
+  font-weight: 700;
+}
+.stw-demo-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.stw-demo-btns button {
+  flex: 1;
+  min-width: 64px;
+  padding: 9px 10px;
+  border-radius: 9px;
+  border: 1px solid rgba(247, 215, 116, 0.35);
+  background: linear-gradient(180deg, #241033, #160a20);
+  color: #f3e8c4;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: filter 120ms ease, transform 80ms ease;
+}
+.stw-demo-btns button:hover:not(:disabled) {
+  filter: brightness(1.15);
+}
+.stw-demo-btns button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.stw-demo-btns button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.stw-demo-toggles {
+  display: flex;
+  gap: 20px;
+}
+.stw-demo-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #cdbfe0;
+  cursor: pointer;
+}
+.stw-demo-hint {
+  margin: 0;
+  font-size: 11px;
+  color: #7f6f97;
+}
+.stw-demo-btns--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* --- End-of-spins session summary (big casino / game-show win screen) --- */
+/* Uses ONLY the supplied PNG artwork in /demo/wtf-spin/end-screen. CSS only
+   positions, sizes, layers and renders text/numbers over that artwork. */
+.stw-end {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  width: 100vw;
+  height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  animation: stw-end-fade 260ms ease both;
+}
+@keyframes stw-end-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* z10 — dim + blur the still-visible wheel behind the celebration */
+.stw-end-dim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  backdrop-filter: brightness(0.38) saturate(0.75) blur(1.5px);
+  -webkit-backdrop-filter: brightness(0.38) saturate(0.75) blur(1.5px);
+  pointer-events: none;
+}
+.stw-end-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 42%,
+    rgba(119, 36, 0, 0.10) 0%,
+    rgba(13, 4, 18, 0.52) 52%,
+    rgba(5, 1, 10, 0.82) 100%
+  );
+}
+
+/* Central mobile-width game composition (desktop simply centres it). */
+.stw-end-stage {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 520px;
+  min-height: 100dvh;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: max(14px, env(safe-area-inset-top)) 12px calc(env(safe-area-inset-bottom) + 18px);
+}
+
+/* --- decorative celebration layers (pointer-transparent) ---------------- */
+.stw-end-burst,
+.stw-end-ring {
+  position: absolute;
+  left: 50%;
+  top: 44%;
+  transform: translate(-50%, -50%);
+  height: auto;
+  pointer-events: none;
+}
+.stw-end-burst {
+  z-index: 20;
+  width: 128%;
+  max-width: 650px;
+  opacity: 0.95;
+  mix-blend-mode: screen;
+  animation: stw-end-burst-in 900ms ease-out both, stw-end-spin 42s linear infinite;
+}
+.stw-end-ring {
+  z-index: 25;
+  width: 112%;
+  max-width: 560px;
+  opacity: 0.96;
+  animation: stw-end-pop 640ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+@keyframes stw-end-spin {
+  to { rotate: 360deg; }
+}
+@keyframes stw-end-burst-in {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+  100% { opacity: 0.95; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes stw-end-pop {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0.7); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+.stw-end-confetti,
+.stw-end-notes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.stw-end-confetti {
+  z-index: 30;
+  opacity: 0.92;
+  animation: stw-end-fade 700ms ease both;
+}
+.stw-end-notes {
+  z-index: 31;
+  animation: stw-end-notes-in 820ms ease both;
+}
+@keyframes stw-end-notes-in {
+  from { opacity: 0; transform: scale(1.09); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* --- z40 status bar ----------------------------------------------------- */
+.stw-end-status {
+  position: relative;
+  z-index: 40;
+  flex: 0 0 auto;
+  width: calc(100% - 24px);
+  max-width: 496px;
+  aspect-ratio: 2172 / 724;
+}
+.stw-end-status-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.stw-end-status-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  padding: 0 4.5%;
+}
+.stw-end-status-cell {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+}
+.stw-end-status-label {
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(10px, 2.8vw, 14px);
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: #fff1c7;
+  white-space: nowrap;
+}
+.stw-end-status-label[data-kind="credit"] {
+  color: #e4c5ff;
+}
+.stw-end-status-value {
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(24px, 7vw, 38px);
+  line-height: 0.95;
+}
+.stw-end-status-value[data-kind="spins"] {
+  color: #ffe184;
+}
+.stw-end-status-value[data-kind="cash"] {
+  background: linear-gradient(180deg, #fff5af 0%, #ffd75d 45%, #e99b08 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.stw-end-status-value[data-kind="credit"] {
+  background: linear-gradient(180deg, #f4dcff 0%, #d58cff 50%, #a74dff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+
+/* --- middle band: hero cluster + saved chip, vertically centred --------- */
+.stw-end-mid {
+  flex: 1 1 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(2px, 0.8vh, 10px);
+  padding: clamp(4px, 1.2vh, 14px) 0;
+}
+
+/* z50 — crowned hero frame */
+.stw-end-hero {
+  position: relative;
+  z-index: 50;
+  width: min(83vw, 420px);
+  aspect-ratio: 1122 / 1402;
+  animation: stw-end-hero-in 560ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+@keyframes stw-end-hero-in {
+  0% { opacity: 0; transform: scale(0.78) translateY(10px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.stw-end-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 20px 42px rgba(0, 0, 0, 0.6));
+}
+
+/* z55 — hero typography (Anton). "NICE WIN!" in upper red panel. */
+.stw-end-nicewin {
+  position: absolute;
+  z-index: 55;
+  top: 25%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(45px, 12vw, 72px);
+  line-height: 0.9;
+  letter-spacing: 0.015em;
+  text-transform: uppercase;
+  background: linear-gradient(
+    180deg,
+    #fff8c2 0%,
+    #ffe476 20%,
+    #ffc12d 46%,
+    #f49c00 72%,
+    #ffe992 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 1.5px #fff2a6;
+  text-shadow:
+    0 3px 0 #9b3500,
+    0 7px 0 #601600,
+    0 12px 18px rgba(0, 0, 0, 0.70),
+    0 0 20px rgba(255, 190, 47, 0.45);
+}
+
+/* The single largest element — the hero amount. */
+.stw-end-amount {
+  position: absolute;
+  z-index: 55;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  text-align: center;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(92px, 27vw, 158px);
+  line-height: 0.78;
+  letter-spacing: -0.045em;
+  background: linear-gradient(
+    180deg,
+    #fffbd0 0%,
+    #ffe77a 18%,
+    #ffc42e 43%,
+    #f29a00 65%,
+    #ffe58a 82%,
+    #c86c00 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  -webkit-text-stroke: 2px #fff2a0;
+  text-shadow:
+    0 4px 0 #a03700,
+    0 8px 0 #6c1900,
+    0 13px 0 #421000,
+    0 18px 24px rgba(0, 0, 0, 0.68),
+    0 0 30px rgba(255, 183, 30, 0.55);
+}
+
+/* z60 — cash winnings ribbon across the lower hero */
+.stw-end-ribbon {
+  position: absolute;
+  z-index: 60;
+  left: 50%;
+  bottom: 7%;
+  transform: translateX(-50%);
+  width: 74%;
+  display: grid;
+  place-items: center;
+}
+.stw-end-ribbon-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.5));
+}
+.stw-end-ribbon-text {
+  position: absolute;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  white-space: nowrap;
+  text-align: center;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(25px, 7vw, 39px);
+  letter-spacing: 0.06em;
+  padding-left: 0.06em;
+  color: #fff0a4;
+  text-shadow:
+    0 2px 0 #8a2d00,
+    0 5px 10px rgba(0, 0, 0, 0.55);
+}
+
+/* z65 — saved confirmation chip */
+.stw-end-chip {
+  position: relative;
+  z-index: 65;
+  width: min(78vw, 420px);
+  aspect-ratio: 980 / 190;
+  margin-top: clamp(0px, 0.5vh, 8px);
+  display: grid;
+  place-items: center;
+}
+.stw-end-chip-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.stw-end-chip-text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-weight: 800;
+  font-size: clamp(14px, 3.8vw, 18px);
+  color: #f8f1ff;
+}
+.stw-end-chip-tick {
+  display: inline-grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: #3a1400;
+  background: linear-gradient(180deg, #ffe487, #e9a11a);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+/* --- CTAs --------------------------------------------------------------- */
+.stw-end-actions {
+  flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(4px, 1.2vh, 12px);
+}
+
+/* z70 — GET MORE SPINS */
+.stw-end-primary {
+  position: relative;
+  z-index: 70;
+  width: min(88vw, 470px);
+  aspect-ratio: 2172 / 724;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  animation: stw-end-cta-pulse 2s ease-in-out infinite;
+  transition: transform 80ms ease, filter 120ms ease;
+}
+.stw-end-primary-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.stw-end-primary-text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* nudge up off the lower bevel of the plate */
+  padding-bottom: 3%;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(31px, 8vw, 45px);
+  letter-spacing: 0.035em;
+  color: #fff3bb;
+  text-shadow:
+    0 3px 0 #851b00,
+    0 6px 10px rgba(0, 0, 0, 0.50);
+}
+.stw-end-primary-chev {
+  margin-top: -2px;
+}
+.stw-end-primary:hover {
+  filter: brightness(1.06);
+}
+.stw-end-primary:active {
+  transform: translateY(1px) scale(0.995);
+}
+@keyframes stw-end-cta-pulse {
+  0%, 100% { filter: drop-shadow(0 8px 18px rgba(214, 38, 56, 0.4)); }
+  50% { filter: drop-shadow(0 10px 26px rgba(247, 215, 116, 0.6)); }
+}
+
+/* z75 — FINISH FOR NOW */
+.stw-end-secondary {
+  position: relative;
+  z-index: 75;
+  width: min(66vw, 340px);
+  aspect-ratio: 1050 / 240;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: transform 80ms ease, filter 120ms ease;
+}
+.stw-end-secondary-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.stw-end-secondary-text {
+  position: relative;
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(15px, 4vw, 20px);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #f4efff;
+}
+.stw-end-secondary:hover {
+  filter: brightness(1.08);
+}
+.stw-end-secondary:active {
+  transform: translateY(1px);
+}
+
+/* --- Get-more-spins mock panel (demo only) ------------------------------- */
+.stw-more {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.stw-more-scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 1, 6, 0.72);
+  backdrop-filter: blur(2px);
+  animation: stw-fade-in 180ms ease both;
+}
+.stw-more-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(90vw, 340px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 22px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #1c0b16, #0a0308);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 2px rgba(247, 215, 116, 0.8);
+  animation: stw-pop-in 260ms cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+.stw-more-title {
+  margin: 0;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-size: clamp(24px, 6vw, 32px);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #f7d774;
+}
+.stw-more-credit {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.stw-more-credit-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #d9c7ea;
+}
+.stw-more-credit-amt {
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-size: 34px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  background: linear-gradient(180deg, #f3e6ff, #b98bff 48%, #f7d774 108%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.stw-more-copy {
+  margin: 0;
+  font-size: 13px;
+  color: #e4d8f5;
+  text-align: center;
+}
+.stw-more-demo {
+  margin: 0;
+  font-size: 11px;
+  color: #7f6f97;
+  text-align: center;
+}
+.stw-more-continue {
+  width: 100%;
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-size: clamp(22px, 5.6vw, 30px);
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #2a0710;
+  cursor: pointer;
+  background: linear-gradient(180deg, #ffd76b, #f0a91e 55%, #d62638);
+  box-shadow: inset 0 0 0 2px rgba(247, 215, 116, 0.9);
+  transition: filter 120ms ease, transform 80ms ease;
+}
+.stw-more-continue:hover {
+  filter: brightness(1.08);
+}
+.stw-more-continue:active {
+  transform: translateY(1px);
+}
+.stw-more-cancel {
+  padding: 4px 12px;
+  border: none;
+  background: none;
+  color: #a99bc0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.stw-more-cancel:hover {
+  color: #e4d8f5;
+}
+
+/* --- Reduced motion ------------------------------------------------------ */
+@media (prefers-reduced-motion: reduce) {
+  .stw-spin-btn[data-spinning="true"],
+  .stw-highlight-wedge,
+  .stw-burst,
+  .stw-wheel--celebrate .stw-rim,
+  .stw-confetti-bit,
+  .stw-flyticket,
+  .stw-reveal-amt,
+  .stw-status-value,
+  .stw-end-burst,
+  .stw-end-ring,
+  .stw-end-hero,
+  .stw-end-notes,
+  .stw-end-confetti,
+  .stw-end-primary,
+  .stw-rimlight,
+  .stw-wheel-wrap[data-shake],
+  .stw-root--mwshake,
+  .mw-scrim,
+  .mw-smoke,
+  .mw-fx,
+  .mw-flash,
+  .mw-title,
+  .mw-count,
+  .mw-subtitle,
+  .mw-confetti,
+  .mw-row,
+  .mw-row-inner,
+  .mw-shine,
+  .mw-continue-img {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+  .stw-confetti {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   MULTIPLE-WINS celebration overlay (DEMO ONLY)
+   Uses ONLY the supplied artwork in /demo/wtf-spin/multiwin. Every layer is a
+   CSS animation keyed off the overlay mount time; the parent (wheel-demo.tsx)
+   syncs the wheel spin, rim/scene lighting and screen shake to the same clock.
+   ========================================================================= */
+
+/* Game-root screen shake at the impact moment (item: 1.15s). */
+@keyframes mw-rootshake {
+  0% { transform: translate(0, 0); }
+  15% { transform: translate(-6px, 2px); }
+  30% { transform: translate(7px, -3px); }
+  45% { transform: translate(-5px, 2px); }
+  60% { transform: translate(4px, -2px); }
+  80% { transform: translate(-2px, 1px); }
+  100% { transform: translate(0, 0); }
+}
+.stw-root--mwshake {
+  animation: mw-rootshake 320ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+
+/* Existing wheel: rim brightens as the spin peaks; the whole wheel dims + blurs
+   behind the prize list. Filters only — artwork is never altered. */
+.stw-wheel-wrap[data-mw="impact"] .stw-rim,
+.stw-wheel-wrap[data-mw="settle"] .stw-rim {
+  filter: brightness(1.35);
+  transition: filter 500ms ease;
+}
+.stw-wheel-wrap[data-mw="settle"] .stw-wheel {
+  filter: drop-shadow(0 18px 34px rgba(0, 0, 0, 0.6)) brightness(0.7) blur(1.5px);
+  transition: filter 420ms ease;
+}
+
+.mw-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.mw-overlay[data-closing] {
+  animation: mw-close 350ms ease forwards;
+}
+@keyframes mw-close {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* z15 — scene dimming (background + wheel brightness down) */
+.mw-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+  background: radial-gradient(120% 90% at 50% 42%, rgba(10, 3, 16, 0.35), rgba(4, 1, 9, 0.86));
+  opacity: 0;
+  animation: mw-scrim 3000ms ease both;
+}
+@keyframes mw-scrim {
+  0% { opacity: 0; }
+  17% { opacity: 0.45; }
+  93% { opacity: 0.45; }
+  100% { opacity: 0.62; }
+}
+
+/* z30 — smoke, three crossfading frames per side */
+.mw-smoke {
+  position: fixed;
+  top: 37%;
+  width: min(58vw, 340px);
+  height: auto;
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+}
+.mw-smoke--l1, .mw-smoke--l2, .mw-smoke--l3 { left: -8%; }
+.mw-smoke--r1, .mw-smoke--r2, .mw-smoke--r3 { right: -8%; }
+.mw-smoke--l1, .mw-smoke--r1 { animation: mw-smoke-a 560ms ease both; }
+.mw-smoke--l2, .mw-smoke--r2 { animation: mw-smoke-b 560ms ease both; }
+.mw-smoke--l3, .mw-smoke--r3 { animation: mw-smoke-c 2600ms ease both; }
+@keyframes mw-smoke-a {
+  0% { opacity: 0; transform: translateY(0) scale(0.7); }
+  40% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-12px) scale(1); }
+}
+@keyframes mw-smoke-b {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.9); }
+  45% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-18px) scale(1.02); }
+}
+@keyframes mw-smoke-c {
+  0% { opacity: 0; transform: translateY(-14px) scale(1); }
+  12% { opacity: 0.92; }
+  55% { opacity: 0.92; transform: translateY(-25px) scale(1.08); }
+  100% { opacity: 0.35; transform: translateY(-30px) scale(1.1); }
+}
+
+/* Wheel-centred celebration burst (fades out as the prize list arrives). */
+.mw-burstgroup {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
+  pointer-events: none;
+  transition: opacity 420ms ease;
+}
+.mw-burstgroup.mw-faded { opacity: 0; }
+
+.mw-anchor {
+  position: fixed;
+  width: 0;
+  height: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+.mw-anchor--wheel { left: var(--mw-cx, 50%); top: var(--mw-cy, 46%); }
+.mw-anchor--title { left: 50%; top: 46%; }
+.mw-fx { display: block; height: auto; }
+
+.mw-rays { width: calc(var(--mw-w, 90vw) * 1.25); opacity: 0; animation: mw-rays 500ms ease both; }
+@keyframes mw-rays {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 0.9; transform: scale(1.05); }
+}
+.mw-burst { width: calc(var(--mw-w, 90vw) * 1.35); opacity: 0; animation: mw-burst-in 600ms cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+@keyframes mw-burst-in {
+  0% { opacity: 0; transform: scale(0.2); }
+  70% { opacity: 1; transform: scale(1.25); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.mw-glow { width: calc(var(--mw-w, 90vw) * 1.08); opacity: 0; animation: mw-glow-in 500ms ease both; }
+@keyframes mw-glow-in {
+  0% { opacity: 0; transform: scale(0.85); }
+  60% { opacity: 1; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.mw-debris { width: calc(var(--mw-w, 90vw) * 1.35); opacity: 0; animation: mw-debris 900ms ease both; }
+@keyframes mw-debris {
+  0% { opacity: 0; transform: scale(0.55); }
+  45% { opacity: 1; }
+  100% { opacity: 0.75; transform: scale(1.3); }
+}
+.mw-spark { width: calc(var(--mw-w, 90vw) * 1.2); opacity: 0; animation: mw-spark 650ms ease both; }
+@keyframes mw-spark {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1.15); }
+}
+.mw-star { width: min(55vw, 300px); opacity: 0; animation: mw-star 600ms ease both; }
+@keyframes mw-star {
+  0% { opacity: 0; transform: scale(0.2); }
+  55% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0.6; transform: scale(1.3); }
+}
+/* z35 — gold particles rising (standalone; clears itself before the settle) */
+.mw-particles { width: calc(var(--mw-w, 90vw) * 1); opacity: 0; animation: mw-particles 1400ms ease both; }
+@keyframes mw-particles {
+  0% { opacity: 0; transform: translateY(10px); }
+  30% { opacity: 0.9; }
+  100% { opacity: 0; transform: translateY(-18px); }
+}
+
+/* z40 — camera flash */
+.mw-flash {
+  position: fixed;
+  left: 50%;
+  top: 46%;
+  transform: translate(-50%, -50%);
+  width: min(140vw, 760px);
+  height: auto;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  animation: mw-flash 240ms ease both;
+}
+@keyframes mw-flash {
+  0% { opacity: 0; }
+  25% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* z50 — MULTIPLE WINS! hero title (asset carries the wordmark) */
+.mw-title-wrap {
+  position: fixed;
+  left: 50%;
+  top: 47%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+  width: min(92vw, 460px);
+  pointer-events: none;
+  opacity: 1;
+  transition: transform 420ms cubic-bezier(0.2, 0.9, 0.25, 1), opacity 420ms ease;
+}
+.mw-title-wrap--shift {
+  transform: translate(-50%, -50%) translateY(-128px) scale(0.78);
+  opacity: 0.9;
+}
+.mw-title {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-origin: center;
+  opacity: 0;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.6));
+}
+.mw-title.mw-anim { animation: mw-title-in 620ms cubic-bezier(0.2, 0.9, 0.3, 1.1) both; }
+@keyframes mw-title-in {
+  0% { opacity: 0; transform: translateY(30px) scale(0.35); }
+  55% { opacity: 1; transform: translateY(4px) scale(1.16); }
+  80% { transform: translateY(0) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* z52 — count "2" + INSTANT PRIZES UNLOCKED subtitle */
+.mw-subgroup {
+  position: fixed;
+  left: 50%;
+  top: 62%;
+  transform: translate(-50%, -50%);
+  z-index: 52;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(6px, 2.4vw, 16px);
+  pointer-events: none;
+  transition: opacity 380ms ease;
+}
+.mw-subgroup.mw-faded { opacity: 0; }
+.mw-count {
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(34px, 10vw, 60px);
+  line-height: 1;
+  color: #ffe06b;
+  text-shadow: 0 3px 0 #7a2300, 0 7px 14px rgba(0, 0, 0, 0.65);
+  opacity: 0;
+}
+.mw-count.mw-anim { animation: mw-count-in 350ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both; }
+@keyframes mw-count-in {
+  0% { opacity: 0; transform: scale(0.3); }
+  60% { opacity: 1; transform: scale(1.15); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.mw-subtitle { display: block; width: min(62vw, 340px); height: auto; opacity: 0; }
+.mw-subtitle.mw-anim { animation: mw-sub-in 300ms ease both; }
+@keyframes mw-sub-in {
+  0% { opacity: 0; transform: scale(0.8); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* z60 — confetti */
+.mw-confetti {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 60;
+  opacity: 0;
+  pointer-events: none;
+}
+.mw-confetti.mw-anim { animation: mw-confetti 1400ms ease both; }
+@keyframes mw-confetti {
+  0% { opacity: 0; }
+  36% { opacity: 0.8; }
+  46% { opacity: 0.8; }
+  100% { opacity: 0.3; }
+}
+
+/* z55 — prize rows */
+.mw-prizes {
+  position: fixed;
+  left: 50%;
+  top: 55%;
+  transform: translate(-50%, -50%);
+  z-index: 55;
+  width: min(82vw, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2.6vw, 16px);
+  pointer-events: none;
+}
+.mw-row { width: 100%; opacity: 0; }
+.mw-row--l.mw-anim { animation: mw-row-l 420ms cubic-bezier(0.16, 0.84, 0.3, 1) both; }
+.mw-row--r.mw-anim { animation: mw-row-r 420ms cubic-bezier(0.16, 0.84, 0.3, 1) both; }
+@keyframes mw-row-l {
+  0% { opacity: 0; transform: translateX(-120%); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes mw-row-r {
+  0% { opacity: 0; transform: translateX(120%); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.mw-row-inner {
+  position: relative;
+  width: 100%;
+  animation: mw-pulse 350ms ease both;
+}
+@keyframes mw-pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+.mw-row-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+}
+/* Dynamic value/label sit inside the empty right-hand panel of the row art. */
+.mw-row-text {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 46%;
+  right: 7%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  text-align: center;
+}
+.mw-row-value {
+  font-family: var(--stw-font-anton), "Arial Black", sans-serif;
+  font-weight: 400;
+  font-size: clamp(40px, 13vw, 74px);
+  line-height: 0.85;
+  background: linear-gradient(180deg, #fff7b1, #ffd35c 55%, #e99c00);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.mw-row-label {
+  font-family: var(--stw-font-montserrat), Arial, sans-serif;
+  font-weight: 900;
+  font-size: clamp(15px, 4.4vw, 24px);
+  letter-spacing: 0.07em;
+  padding-left: 0.07em;
+  line-height: 1;
+}
+.mw-row-label--credit { color: #f0d7ff; }
+.mw-row-label--spin { color: #fff2c4; }
+.mw-shine {
+  position: absolute;
+  top: 50%;
+  left: 8%;
+  height: 86%;
+  width: 40%;
+  transform: translate(-140%, -50%);
+  opacity: 0;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  animation: mw-shine 650ms ease both;
+}
+.mw-shine img { display: block; width: 100%; height: 100%; object-fit: contain; }
+@keyframes mw-shine {
+  0% { opacity: 0; transform: translate(-140%, -50%); }
+  30% { opacity: 0.85; }
+  70% { opacity: 0.85; }
+  100% { opacity: 0; transform: translate(300%, -50%); }
+}
+
+/* Demo control trigger emphasis */
+.stw-demo-multiwin {
+  font-weight: 800 !important;
+  letter-spacing: 0.04em;
+  color: #2a0710 !important;
+  background: linear-gradient(180deg, #ffd76b, #f0a91e 55%, #d62638) !important;
+  border-color: rgba(247, 215, 116, 0.9) !important;
+}
+
+/* z70 — CONTINUE */
+.mw-continue {
+  position: fixed;
+  left: 50%;
+  bottom: max(28px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  z-index: 70;
+  width: min(82vw, 340px);
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+}
+.mw-continue-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  opacity: 0;
+  filter: drop-shadow(0 10px 22px rgba(214, 38, 56, 0.5));
+}
+.mw-continue-img.mw-anim { animation: mw-continue 450ms cubic-bezier(0.2, 0.9, 0.25, 1) both; }
+@keyframes mw-continue {
+  0% { opacity: 0; transform: translateY(45px) scale(0.9); }
+  70% { opacity: 1; transform: translateY(0) scale(1.04); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}

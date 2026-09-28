@@ -1,0 +1,248 @@
+/* ============================================================
+   JUST LAUNCHED — flame-led perimeter treatment (production)
+   Derived from the approved "WTF Master" lab concept (Concept D).
+   CSS-ONLY: no JS animation loop, no canvas. Animates only a masked
+   conic-gradient angle (registered <angle>), opacity and background
+   position. Animations run ONLY while `.wtf-jl--active` is present, so
+   the JustLaunchedFrame component can pause them off-screen.
+   ============================================================ */
+
+@property --wtf-jl-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.wtf-jl {
+  --wtf-jl-radius: 22px;
+  --wtf-jl-ring: 2.5px;
+  position: relative;
+  display: block;
+  border-radius: var(--wtf-jl-radius);
+  isolation: isolate;
+}
+
+/* Perimeter layers: paint a full-box gradient, then punch out the interior
+   with a composited mask so only a thin border ring remains. Rotating the
+   conic inside the ring carries the flame through the rounded corners with
+   no visible square layer. pointer-events:none keeps the card fully
+   clickable underneath. */
+.wtf-jl-ring,
+.wtf-jl-halo,
+.wtf-jl-heatring,
+.wtf-jl-flarehead {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border-radius: inherit;
+  padding: var(--wtf-jl-ring);
+  pointer-events: none;
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+
+/* FLAME RUNNER: most of the perimeter stays dark, then a long tapering heat
+   trail — deep-red ember -> red -> orange -> hot yellow -> compact white-hot
+   ignition tip. The long warm falloff is what reads as flame, not an electric
+   bolt. Pink is absent here (kept as an occasional accent on the lick). */
+.wtf-jl-ring {
+  background: conic-gradient(
+    from var(--wtf-jl-angle),
+    transparent 0deg,
+    transparent 266deg,
+    rgba(110, 6, 0, 0.26) 290deg,
+    rgba(178, 22, 0, 0.54) 312deg,
+    rgba(230, 52, 0, 0.82) 330deg,
+    rgba(255, 110, 12, 0.96) 344deg,
+    rgba(255, 190, 74, 1) 352deg,
+    rgba(255, 242, 208, 1) 357deg,
+    #ffffff 359deg,
+    transparent 360deg
+  );
+  filter: saturate(1.22);
+}
+
+/* Heat haze travels WITH the flame just outside the sharp ring, softly
+   blurred. Hugs the edge — NOT a full-card aura. */
+.wtf-jl-halo {
+  padding: 7px;
+  background: conic-gradient(
+    from var(--wtf-jl-angle),
+    transparent 0deg,
+    transparent 300deg,
+    rgba(255, 68, 0, 0.4) 326deg,
+    rgba(255, 148, 48, 0.72) 346deg,
+    rgba(255, 214, 148, 0.92) 356deg,
+    rgba(255, 120, 20, 0.4) 360deg
+  );
+  filter: blur(7px);
+  opacity: 0.6;
+}
+
+/* Ambient heat — dominant orange/red with only a faint pink whisper. */
+.wtf-jl-heatring {
+  background: conic-gradient(
+    from 0deg,
+    rgba(255, 74, 0, 0.3),
+    rgba(255, 40, 150, 0.1),
+    rgba(255, 120, 20, 0.34),
+    rgba(255, 40, 150, 0.1),
+    rgba(255, 74, 0, 0.3)
+  );
+  opacity: 0.5;
+}
+
+/* IGNITION LICK — normally invisible; every ~3.7s the leading edge flares
+   into a hotter, whiter tongue with only a tiny secondary WTF-pink ember.
+   One restrained lick, no particle shower. */
+.wtf-jl-flarehead {
+  padding: 4px;
+  background: conic-gradient(
+    from var(--wtf-jl-angle),
+    transparent 0deg,
+    transparent 347deg,
+    rgba(255, 168, 40, 0.6) 353deg,
+    rgba(255, 240, 200, 0.98) 357deg,
+    #ffffff 359.4deg,
+    rgba(255, 150, 220, 0.5) 360deg,
+    transparent 360deg
+  );
+  filter: blur(1px);
+  mix-blend-mode: screen;
+  opacity: 0;
+}
+
+/* Restrained outer glow — hugs the edge (small inset), warm, low opacity.
+   Sits BEHIND the card so it only bleeds around the perimeter. */
+.wtf-jl-glow {
+  position: absolute;
+  inset: -8px;
+  z-index: -1;
+  border-radius: calc(var(--wtf-jl-radius) + 8px);
+  pointer-events: none;
+  background: radial-gradient(62% 62% at 50% 50%, rgba(255, 82, 12, 0.42), transparent 72%);
+  opacity: 0.45;
+}
+
+/* ---- Animations (only while active) ---- */
+.wtf-jl--active .wtf-jl-ring {
+  animation:
+    wtf-jl-spin 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    wtf-jl-flame-flicker 0.55s ease-in-out infinite;
+}
+.wtf-jl--active .wtf-jl-halo {
+  animation:
+    wtf-jl-spin 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    wtf-jl-halo-flicker 0.67s ease-in-out infinite;
+}
+.wtf-jl--active .wtf-jl-heatring {
+  animation: wtf-jl-heat-breathe 2.8s ease-in-out infinite;
+}
+.wtf-jl--active .wtf-jl-flarehead {
+  animation:
+    wtf-jl-spin 1.7s cubic-bezier(0.62, 0, 0.38, 1) infinite,
+    wtf-jl-flare 3.7s ease-in-out infinite;
+}
+.wtf-jl--active .wtf-jl-glow {
+  animation: wtf-jl-glow-flash 3.7s ease-in-out infinite;
+}
+.wtf-jl--active .wtf-jl-headline {
+  animation: wtf-jl-textflash 3.7s ease-in-out infinite;
+}
+
+/* When paused (off-screen) freeze the flame at a flattering angle so the
+   static state still looks hot rather than blank. */
+.wtf-jl:not(.wtf-jl--active) .wtf-jl-ring,
+.wtf-jl:not(.wtf-jl--active) .wtf-jl-halo {
+  --wtf-jl-angle: 322deg;
+}
+
+@keyframes wtf-jl-spin {
+  0%   { --wtf-jl-angle: 0deg; }
+  40%  { --wtf-jl-angle: 158deg; }
+  52%  { --wtf-jl-angle: 178deg; }
+  100% { --wtf-jl-angle: 360deg; }
+}
+@keyframes wtf-jl-flame-flicker {
+  0%   { opacity: 1; }
+  16%  { opacity: 0.84; }
+  31%  { opacity: 1; }
+  44%  { opacity: 0.9; }
+  60%  { opacity: 1; }
+  73%  { opacity: 0.82; }
+  87%  { opacity: 0.95; }
+  100% { opacity: 1; }
+}
+@keyframes wtf-jl-halo-flicker {
+  0%   { opacity: 0.6; }
+  20%  { opacity: 0.44; }
+  40%  { opacity: 0.62; }
+  58%  { opacity: 0.5; }
+  76%  { opacity: 0.64; }
+  100% { opacity: 0.6; }
+}
+@keyframes wtf-jl-heat-breathe {
+  0%, 100% { opacity: 0.32; }
+  50%      { opacity: 0.6; }
+}
+@keyframes wtf-jl-flare {
+  0%, 80%, 100% { opacity: 0; transform: scale(1); }
+  86%           { opacity: 1; transform: scale(1.02); }
+  93%           { opacity: 0.32; transform: scale(1.005); }
+}
+@keyframes wtf-jl-glow-flash {
+  0%, 78%, 100% { opacity: 0.42; }
+  87%           { opacity: 0.7; }
+}
+
+/* ---- Launch badge (image overlay on cards) ---- */
+.wtf-jl-badge {
+  color: #fff;
+  box-shadow: inset 0 0 0 1px rgba(255, 150, 90, 0.4), 0 0 14px rgba(255, 90, 30, 0.25);
+}
+.wtf-jl-badge .wtf-jl-bolt {
+  filter: drop-shadow(0 0 6px rgba(255, 175, 80, 0.9));
+}
+
+/* ---- Launch banner headline (TicketSelector) ---- */
+.wtf-jl-headline {
+  text-shadow: 0 0 10px rgba(255, 138, 50, 0.32);
+}
+@keyframes wtf-jl-textflash {
+  0%, 80%, 100% { text-shadow: 0 0 10px rgba(255, 138, 50, 0.32); }
+  87%           { text-shadow: 0 0 18px rgba(255, 172, 74, 0.85), 0 0 5px rgba(255, 255, 255, 0.55); }
+}
+
+/* ============================================================
+   REDUCED MOTION — freeze into a premium static hot border.
+   No travelling flame, no flicker; functionality unchanged.
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  .wtf-jl-ring,
+  .wtf-jl-halo,
+  .wtf-jl-heatring,
+  .wtf-jl-flarehead,
+  .wtf-jl-glow,
+  .wtf-jl-headline {
+    animation: none !important;
+  }
+  .wtf-jl-ring,
+  .wtf-jl-halo {
+    --wtf-jl-angle: 322deg;
+  }
+  .wtf-jl-flarehead {
+    opacity: 0;
+  }
+  .wtf-jl-glow {
+    opacity: 0.5;
+  }
+  .wtf-jl-headline {
+    text-shadow: 0 0 12px rgba(255, 150, 60, 0.5);
+  }
+}
